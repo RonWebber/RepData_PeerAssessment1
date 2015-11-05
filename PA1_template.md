@@ -34,7 +34,8 @@ instructions are in a file named 'README.md'. The file
 then installs, if they are missing, packages 'dplyr', 'ggplot2', and
 'readr', and attaches them.
 
-```{r echo=TRUE, message=FALSE}
+
+```r
 setwd('~/DSRR-034/PA1/RepData_PeerAssessment1')
 if(! ('dplyr' %in% rownames(installed.packages()))) {
     install.packages('dplyr')
@@ -48,7 +49,6 @@ if(! ('readr' %in% rownames(installed.packages()))) {
     install.packages('readr')
 }
 library(readr)
-
 ```
 
 Next the program loads the data.  
@@ -81,9 +81,17 @@ values.
 
 The program adds the 'int' variable in 'activity'. It is a convenient identifier for intervals and is used in plots. To convert to 'interval' from 'int', multiply by 5.
 
-```{r echo=TRUE}
+
+```r
 activity <- read_csv('activity.zip')
 (date.activity.down.loaded <- date())
+```
+
+```
+## [1] "Thu Nov  5 11:55:05 2015"
+```
+
+```r
 activity <- mutate(activity, int=interval/5)
 ```
 
@@ -100,7 +108,8 @@ values, which accounts for the 8*288 = 2304 'NA's.
 were computed from data that have missing values, not that the
 dataframe has missing values.)  
 
-```{r echo=TRUE}
+
+```r
 total.steps.per.day.with.NAs <- group_by(activity, date) %>% 
     summarise(total.per.day.with.NAs=sum(steps, na.rm=TRUE))
 ```
@@ -108,13 +117,19 @@ total.steps.per.day.with.NAs <- group_by(activity, date) %>%
 Figure 1 is a histogram of 'total.steps.per.day.with.NAs'. The bin
 width is 288, so each bin contains all the intervals in one day.
 
-```{r echo=TRUE, message=FALSE, results='hide'}
+
+```r
 ggplot(total.steps.per.day.with.NAs, aes(x=total.per.day.with.NAs)) +
     geom_histogram(binwidth=288) +
     labs(title='Figure 1: Distribution of Total Steps per Day with NAs') +
     labs(x='Total Number of Steps per Day with NAs (binwidth=288)') +
     labs(y='Number of Days') + 
     scale_y_discrete(breaks=1:12)
+```
+
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
+
+```r
 dev.copy(png, file='figure.1.png')
 dev.off()
 ```
@@ -128,11 +143,23 @@ average is 9354.23.  The numeric value
 'median.total.steps.per.day.with.NAs' is the median of steps
 taken. The median is 10395.
 
-```{r echo=TRUE}
+
+```r
 (mean.total.steps.per.day.with.NAs <- 
     mean(total.steps.per.day.with.NAs$total.per.day.with.NAs))
+```
+
+```
+## [1] 9354.23
+```
+
+```r
 (median.total.steps.per.day.with.NAs <- 
     median(total.steps.per.day.with.NAs$total.per.day.with.NAs))
+```
+
+```
+## [1] 10395
 ```
 
 ## What is the average daily activity pattern?
@@ -144,30 +171,42 @@ is a dataframe with 288 observations and two variables: 'int.id' and
 'mean.per.interval.with.NAs', the number of steps the person took in
 each of the intervals averaged over the days.
 
-```{r echo=TRUE}
+
+```r
 mean.steps.per.interval.with.NAs <- group_by(activity, int) %>%
     summarise(mean.per.interval.with.NAs=mean(steps, na.rm=TRUE))
 ```
 
 Figure 2 is a plot of the mean number of steps in each interval.  
 
-```{r echo=TRUE, message=FALSE, results='hide'}
+
+```r
 ggplot(mean.steps.per.interval.with.NAs, aes(x=int, y=mean.per.interval.with.NAs)) + 
     geom_line() + labs(title='Figure 2: Mean Number of Steps Per Interval with NAs') +
     labs(x='Interval (int)') +
     labs(y='Mean Number of Steps') + 
     scale_y_discrete(breaks=c(0, 50, 100, 150, 200)) 
+```
+
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png) 
+
+```r
 dev.copy(png, file='figure.2.png') 
 dev.off() 
-``` 
+```
 
 The program next computes the interval which has the most steps on average
 across the days.  It is 835 (i.e. 8:35 AM), which has an 'int' value of 167.
 
-```{r echo=TRUE}
+
+```r
 (activity$interval[max.mean.steps.per.interval.with.NAs <-
         (which(max(mean.steps.per.interval.with.NAs$mean.per.interval) == 
             mean.steps.per.interval.with.NAs$mean.per.interval.with.NAs))])
+```
+
+```
+## [1] 835
 ```
 
 ## Imputing missing values
@@ -191,8 +230,16 @@ The program loops though all the observations. When it finds a missing
 value, it fills the value with the mean for the interval of the
 missing value.
  
-```{r echo=TRUE}
+
+```r
 (number.of.NAs <- sum(is.na(activity)))
+```
+
+```
+## [1] 2304
+```
+
+```r
 mean.steps.per.interval.with.NAs <- group_by(activity, int) %>%
     summarise(mean.per.interval.with.NAs=mean(steps, na.rm=TRUE))
 
@@ -205,16 +252,22 @@ for (i in 1:nrow(activity)) {
 sum(is.na(activity))
 ```
 
+```
+## [1] 0
+```
+
 At this point, there are no missing values in 'activity'. The program
 next plots a histogram similar to Figure 1, but using the version of
 'activity' with inputed values for missing data. To plot the histogram, the program needs to get the total steps per day with the real data and the
 imputed data.  
 
-```{r echo=TRUE, message=FALSE, results='hide'}
+
+```r
 (total.steps.per.day.without.NAs <- group_by(activity, date) %>%
     summarise(total.per.day.without.NAs=sum(steps)))
 ```
-```{r echo=TRUE, message=FALSE, results='hide'}
+
+```r
 ggplot(total.steps.per.day.without.NAs, aes(x=total.per.day.without.NAs)) +
     geom_histogram(binwidth=288) +
     labs(title=
@@ -222,6 +275,11 @@ ggplot(total.steps.per.day.without.NAs, aes(x=total.per.day.without.NAs)) +
     labs(x='Total Number of Imputed Steps per Day (binwidth=288)') +
     labs(y='Number of Days') +
     scale_y_discrete(breaks=0:12)
+```
+
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
+
+```r
 dev.copy(png, file='figure.3.png')
 dev.off()
 ```
@@ -230,12 +288,23 @@ As before, the program calculates the the mean number of steps per day
 and the median number of steps per day. The mean number of steps per
 day is 9503.869 and the median number of steps per day is 10395.
 
-```{r echo=TRUE,}
+
+```r
 (mean.total.steps.per.day.without.NAs <- 
     mean(total.steps.per.day.without.NAs$total.per.day.without.NAs))
+```
 
+```
+## [1] 10766.19
+```
+
+```r
 (median.total.steps.per.day.without.NAs <- 
     median(total.steps.per.day.without.NAs$total.per.day.without.NAs))
+```
+
+```
+## [1] 10766.19
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -248,7 +317,8 @@ the names of the days and it creates a factor with levels 'Weekend'
 and 'Weekday' in 'activity'.  The program next computes the mean
 number of steps in both weekend days and weekday days.
 
-```{r echo=TRUE}
+
+```r
 activity <- mutate(activity, date=as.Date(date)) %>% 
     mutate(weekday=weekdays(date)) %>% 
     mutate(day.type=as.factor(ifelse(weekday %in% c('Saturday', 'Sunday'), 'Weekend', 'Weekday')))
@@ -259,7 +329,8 @@ mean.steps.per.interval.without.NAs <- group_by(activity, int, day.type) %>%
 Using the new variables, the program plots the mean number of steps
 per interval for both types of days in a faceted plot for comparison.
 
-```{r echo=TRUE, message=FALSE, results='hide'}
+
+```r
 ggplot(mean.steps.per.interval.without.NAs,
        aes(x=int, y=mean.per.interval.without.NAs)) +
     geom_line() +
@@ -268,6 +339,11 @@ ggplot(mean.steps.per.interval.without.NAs,
     labs(x='Interval') +
     labs(y='Mean Number of Steps') +
     scale_y_discrete(breaks=c(0, 50, 100, 150, 200))
+```
+
+![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14-1.png) 
+
+```r
 dev.copy(png, file='figure.4.png')
 dev.off()
 ```
@@ -283,7 +359,36 @@ Here is information about the versions of the hardware and software used to
 prepare this analysis and report. The version of RStudio used to prepare this
 report is 'rstudio-0.99.486-amd64.deb'.  
 
-```{r sessionInfo, echo=TRUE}
+
+```r
 sessionInfo()
+```
+
+```
+## R version 3.2.2 (2015-08-14)
+## Platform: x86_64-pc-linux-gnu (64-bit)
+## Running under: Ubuntu 14.04.3 LTS
+## 
+## locale:
+##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+## [1] knitr_1.11    readr_0.2.2   ggplot2_1.0.1 dplyr_0.4.3  
+## 
+## loaded via a namespace (and not attached):
+##  [1] Rcpp_0.12.1      digest_0.6.8     assertthat_0.1   MASS_7.3-44     
+##  [5] grid_3.2.2       R6_2.1.1         plyr_1.8.3       gtable_0.1.2    
+##  [9] DBI_0.3.1        formatR_1.2.1    magrittr_1.5     evaluate_0.8    
+## [13] scales_0.3.0     stringi_1.0-1    lazyeval_0.1.10  reshape2_1.4.1  
+## [17] labeling_0.3     proto_0.3-10     tools_3.2.2      stringr_1.0.0   
+## [21] munsell_0.4.2    parallel_3.2.2   colorspace_1.2-6
 ```
 
