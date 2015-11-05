@@ -11,7 +11,7 @@ output:
 The assignment calls for an R Markdown document to report on the
 results of the analysis. In the following sections I explain the
 analysis and the R code that implements the analysis. The sections
-include the use and othercharacteristics of each of the R objects ---
+include the use and other characteristics of each of the R objects ---
 files, datasets, variables, and plots --- and the code that processes
 them.
 
@@ -88,7 +88,7 @@ activity <- read_csv('activity.zip')
 ```
 
 ```
-## [1] "Thu Nov  5 11:55:05 2015"
+## [1] "Thu Nov  5 13:22:17 2015"
 ```
 
 ```r
@@ -115,7 +115,7 @@ total.steps.per.day.with.NAs <- group_by(activity, date) %>%
 ```
 
 Figure 1 is a histogram of 'total.steps.per.day.with.NAs'. The bin
-width is 288, so each bin contains all the intervals in one day.
+width is 288, so each bin contains all the intervals in one day.  
 
 
 ```r
@@ -134,8 +134,8 @@ dev.copy(png, file='figure.1.png')
 dev.off()
 ```
 
-Eight of the days with zero steps are days with 'NA's in the entire
-step column.  'na.rm' replaces 'NA's with zeros in some cases.
+Eight of the days with zero steps are days with 'NA's in the
+'steps' column for that day.  'na.rm' replaces 'NA's with zeros in some cases.  
 
 The numeric value 'mean.total.steps.per.day.with.NAs' in the next code
 chunk is the average number of steps taken in all the days. The
@@ -167,7 +167,7 @@ taken. The median is 10395.
 In the previous section, the focus is on the number of steps in each
 of the 61 days. In this section the focus is on the number of steps in
 each of the 288 intervals in a day. 'mean.steps.per.interval.with.NAs'
-is a dataframe with 288 observations and two variables: 'int.id' and
+is a dataframe with 288 observations and two variables: 'int' and
 'mean.per.interval.with.NAs', the number of steps the person took in
 each of the intervals averaged over the days.
 
@@ -215,7 +215,7 @@ Imputing missing values in a dataset means using existing values to
 compute a value to fill in the missing value. The computation
 generally uses existing values that are "similar" to the missing
 value. All the missing values are in the 'steps' column of
-'activity. I choose to replace a missing value with the mean of all
+'activity'. I choose to replace a missing value with the mean of all
 the existing values for the same interval as that of the missing
 value.
 
@@ -249,16 +249,21 @@ for (i in 1:nrow(activity)) {
         activity$steps[i] <- mean.steps.per.interval.with.NAs$mean.per.interval.with.NAs[j]
     }
 }
+```
+
+At this point, there are no missing values in 'activity'. 
+
+
+```r
 sum(is.na(activity))
 ```
 
 ```
 ## [1] 0
 ```
-
-At this point, there are no missing values in 'activity'. The program
+The program
 next plots a histogram similar to Figure 1, but using the version of
-'activity' with inputed values for missing data. To plot the histogram, the program needs to get the total steps per day with the real data and the
+'activity' with imputed values for missing data. To plot the histogram, the program needs to get the total steps per day with the real data and the
 imputed data.  
 
 
@@ -277,7 +282,7 @@ ggplot(total.steps.per.day.without.NAs, aes(x=total.per.day.without.NAs)) +
     scale_y_discrete(breaks=0:12)
 ```
 
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png) 
 
 ```r
 dev.copy(png, file='figure.3.png')
@@ -286,7 +291,7 @@ dev.off()
 
 As before, the program calculates the the mean number of steps per day
 and the median number of steps per day. The mean number of steps per
-day is 9503.869 and the median number of steps per day is 10395.
+day is 10766.19 and the median number of steps per day is 10766.19.
 
 
 ```r
@@ -320,10 +325,10 @@ number of steps in both weekend days and weekday days.
 
 ```r
 activity <- mutate(activity, date=as.Date(date)) %>% 
-    mutate(weekday=weekdays(date)) %>% 
+    mutate(weekday=weekdays(date, abbreviate=FALSE)) %>% 
     mutate(day.type=as.factor(ifelse(weekday %in% c('Saturday', 'Sunday'), 'Weekend', 'Weekday')))
 mean.steps.per.interval.without.NAs <- group_by(activity, int, day.type) %>%
-    summarise(mean.per.interval.without.NAs=mean(steps, na.rm=TRUE))
+    summarise(mean.per.interval.without.NAs=mean(steps))
 ```
 
 Using the new variables, the program plots the mean number of steps
@@ -336,12 +341,12 @@ ggplot(mean.steps.per.interval.without.NAs,
     geom_line() +
     facet_grid(day.type ~ ., labeller=label_both) +
     labs(title='Figure 4: Mean Number of Steps Per Interval with Imputed Data') +
-    labs(x='Interval') +
+    labs(x='Interval (int)') +
     labs(y='Mean Number of Steps') +
     scale_y_discrete(breaks=c(0, 50, 100, 150, 200))
 ```
 
-![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14-1.png) 
+![plot of chunk unnamed-chunk-15](figure/unnamed-chunk-15-1.png) 
 
 ```r
 dev.copy(png, file='figure.4.png')
@@ -351,7 +356,7 @@ dev.off()
 Figure 4 shows that on weekday days the steps concentrate in intervals between
 6am and 10am with a secondary peak around 6pm. This pattern suggests a 
 person who is busy during the day---working, attending school, or otherwise
-occupied. On weekend days the person took more steps and they were more evenly 
+occupied. On weekend days the person took more steps, and they were more evenly 
 spread out between 6am and 9pm. This susggests that the person was more active
 on weekend days and for more of the day.  
 
@@ -381,13 +386,13 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] knitr_1.11    readr_0.2.2   ggplot2_1.0.1 dplyr_0.4.3  
+## [1] readr_0.2.2   ggplot2_1.0.1 dplyr_0.4.3   knitr_1.11   
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] Rcpp_0.12.1      digest_0.6.8     assertthat_0.1   MASS_7.3-44     
 ##  [5] grid_3.2.2       R6_2.1.1         plyr_1.8.3       gtable_0.1.2    
-##  [9] DBI_0.3.1        formatR_1.2.1    magrittr_1.5     evaluate_0.8    
-## [13] scales_0.3.0     stringi_1.0-1    lazyeval_0.1.10  reshape2_1.4.1  
+##  [9] DBI_0.3.1        formatR_1.2.1    magrittr_1.5     scales_0.3.0    
+## [13] evaluate_0.8     stringi_1.0-1    lazyeval_0.1.10  reshape2_1.4.1  
 ## [17] labeling_0.3     proto_0.3-10     tools_3.2.2      stringr_1.0.0   
 ## [21] munsell_0.4.2    parallel_3.2.2   colorspace_1.2-6
 ```
